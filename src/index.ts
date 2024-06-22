@@ -1,22 +1,54 @@
-import Fastify from 'fastify';
-import fastifyCors from '@fastify/cors'
+import Fastify, { FastifyReply, FastifyRequest } from 'fastify';
 
+//plugins
+import fastifyCors from '@fastify/cors';
+import fjwt, { FastifyJWT } from '@fastify/jwt'
+import fCookie from '@fastify/cookie'
 import fastifyPrisma from '@joggr/fastify-prisma';
-import prisma from './plugins/prisma';
-import userRoutes from './routes/users';
 
-const fastify = Fastify();
+//plugins on the sistem
+import prisma from './plugins/prisma';
+
+//schemas
+import { userSchemas } from './routes/users/user.schema';
+
+//routes
+import userRoutes from './routes/users/user.route';
+
+import './types/types'
+
+const fastify = Fastify({ logger: true });
 
 fastify.register(fastifyCors, {
-    hook: 'preHandler',
-    origin: 'http://localhost:4200'
+  origin: 'http://localhost:4200',
+  methods: ['GET', 'POST'],
+  credentials: true,
 });
+
+fastify.register(fjwt, {
+  secret: 'supersecret-nmms-jaja'
+})
+
+fastify.addHook('preHandler', (req, res, next) => {
+  req.jwt = fastify.jwt
+  return next()
+})
+
+fastify.register(fCookie, {
+  secret: 'some-secret-key',
+  hook: 'preHandler',
+})
+
+for (let schema of [...userSchemas]) {
+  fastify.addSchema(schema)
+}
 
 fastify.register(fastifyPrisma, {
-    client: prisma,
+  client: prisma,
 });
 
-fastify.register(userRoutes);
+fastify.register(userRoutes, { prefix: 'api/users' });
+
 
 const start = async () => {
   try {
