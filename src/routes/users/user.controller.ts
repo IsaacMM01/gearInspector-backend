@@ -17,7 +17,7 @@ export async function createUser(
     },
   })
   if (user) {
-    return reply.code(401).send({
+    return reply.code(409).send({
       message: 'User already exists with this email',
     })
   }
@@ -30,8 +30,10 @@ export async function createUser(
         name,
       },
     })
+    console.log(user);
     return reply.code(201).send(user)
   } catch (e) {
+    console.log(e);
     return reply.code(500).send(e)
   }
 }
@@ -59,7 +61,24 @@ export async function login(
   reply.setCookie('access_token', token, {
     path: '/',
     httpOnly: true,
-    secure: true,
+    secure: false,
+    sameSite: 'strict',
   })
   return { accessToken: token }
+}
+
+export async function getUsers(req: FastifyRequest, reply: FastifyReply) {
+  const users = await prisma.user.findMany({
+    select: {
+      name: true,
+      id: true,
+      email: true,
+    },
+  })
+  return reply.code(200).send(users)
+}
+
+export async function logout(req: FastifyRequest, reply: FastifyReply) {
+  reply.clearCookie('access_token')
+  return reply.send({ message: 'Logout successful' })
 }

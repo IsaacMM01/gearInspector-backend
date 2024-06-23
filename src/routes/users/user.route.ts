@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
 import prisma from '../../plugins/prisma';
 import { $ref } from './user.schema';
-import { createUser, login } from './user.controller';
+import { createUser, login, logout } from './user.controller';
 
 export default async function userRoutes(
   fastify: FastifyInstance,
@@ -20,6 +20,7 @@ export default async function userRoutes(
           201: $ref('createUserResponseSchema'),
         },
       },
+      preHandler: [fastify.authenticate]
     },
     createUser,
   );
@@ -37,7 +38,11 @@ export default async function userRoutes(
     login
   );
 
-  fastify.delete('/logout', async () => {});
+  fastify.delete(
+    '/logout',
+    { preHandler: [fastify.authenticate] },
+    logout
+  );
 
   fastify.log.info('user routes registered');
 }
