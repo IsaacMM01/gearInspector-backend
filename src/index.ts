@@ -1,81 +1,28 @@
-import Fastify, { FastifyReply, FastifyRequest } from 'fastify';
-
-//plugins
-import fastifyCors from '@fastify/cors';
-import fjwt, { FastifyJWT } from '@fastify/jwt'
-import csrf, { fastifyCsrfProtection } from '@fastify/csrf-protection'
-import fCookie from '@fastify/cookie'
-import fastifyPrisma from '@joggr/fastify-prisma';
-import bcrypt from 'bcrypt'
-
-//plugins on the sistem
-import prisma from './plugins/prisma';
-
-//schemas
-import { userSchemas } from './routes/users/user.schema';
-
-//routes
-import userRoutes from './routes/users/user.route';
 import './types/types'
+import Fastify from 'fastify';
+
+import { prismaPlugin } from './plugins/prisma';
+import corsPlugin from './plugins/cors';
+import jwtPlugin from './plugins/jwt';
+import cookiePlugin from './plugins/cookie';
+
+import authenticate from './services/auth.service';
+
+import routes from './routes';
+import userSchemas from './routes/users/user.schema';
 
 const fastify = Fastify({ logger: true });
-const saltRounds = 10;
-const myPlaintextPassword = 's0/\/\P4$$w0rD';
-//conection with frontend
-fastify.register(fastifyCors, {
-  origin: 'http://localhost:4200',
-  methods: ['GET', 'POST', 'DELETE'],
-  credentials: true,
-});
+fastify.decorate('authenticate',authenticate);
 
-//JWT
-fastify.register(fjwt, {
-  secret: bcrypt.hash(myPlaintextPassword, saltRounds).toString()
-})
-fastify.addHook('preHandler', (req, res, next) => {
-  req.jwt = fastify.jwt
-  return next()
-})
-fastify.register(fCookie, {
-  secret: bcrypt.hash(myPlaintextPassword, saltRounds).toString(),
-  hook: 'preHandler',
-})
+async function start() {
+  await userSchemas(fastify);
 
-//adding schema
-for (let schema of [...userSchemas]) {
-  fastify.addSchema(schema)
-}
+  await prismaPlugin(fastify);
+  await corsPlugin(fastify);
+  await jwtPlugin(fastify);
+  await cookiePlugin(fastify);
 
-fastify.register(fastifyPrisma, {
-  client: prisma,
-});
-
-//Login/Register routes
-fastify.register(userRoutes, { prefix: 'api/users' });
-
-//protectedRoutes
-fastify.decorate(
-  'authenticate',
-  async (req: FastifyRequest, reply: FastifyReply) => {
-    const token = req.cookies.access_token ?? req.headers.authorization
-    if (!token) {
-      return reply.status(401).send({ message: 'Authentication required' })
-    }
-    const decoded = req.jwt.verify<FastifyJWT['user']>(token)
-    req.user = decoded
-  },
-)
-//csrf protection
-// fastify.register(csrf, {cookieOpts: {signed: true}})
-// fastify.get('/',
-//   {
-//     preHandler: [fastify.authenticate],
-//     onRequest: fastify.csrfProtection,
-//   },
-//   getUsers
-// )
-
-const start = async () => {
+  await routes(fastify);
   try {
     await fastify.listen({ port: 3000 });
     fastify.log.info(`Server is running at http://localhost:3000`);

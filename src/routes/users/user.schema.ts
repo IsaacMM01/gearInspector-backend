@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { buildJsonSchemas } from 'fastify-zod';
+import { FastifyInstance } from 'fastify';
 
 const createUserSchema = z.object({
   email: z.string().email(),
@@ -22,9 +23,15 @@ const loginResponseSchema = z.object({
   accessToken: z.string(),
 });
 
-export const { schemas: userSchemas, $ref } = buildJsonSchemas({
+export const { schemas, $ref } = buildJsonSchemas({
   createUserSchema,
   createUserResponseSchema,
   loginSchema,
   loginResponseSchema,
 });
+
+export default async function userSchemas(fastify: FastifyInstance) {
+  for (let schema of [...schemas]) {
+    fastify.addSchema(schema)
+  }
+}

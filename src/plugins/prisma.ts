@@ -1,5 +1,12 @@
 import { PrismaClient } from '@prisma/client';
+import fastifyPrisma from '@joggr/fastify-prisma';
+import { FastifyInstance } from 'fastify';
 
-const prisma = new PrismaClient();
+export const prisma = new PrismaClient();
 
-export default prisma;
+
+export async function prismaPlugin(fastify: FastifyInstance) {
+  fastify.register(fastifyPrisma, {
+    client: prisma,
+  });
+}

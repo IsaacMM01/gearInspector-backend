@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
-import prisma from '../../plugins/prisma';
+import { prisma } from '../../plugins/prisma';
 import { $ref } from './user.schema';
 import { createUser, login, logout } from './user.controller';
 

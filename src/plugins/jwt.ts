@@ -10,7 +10,7 @@ export default async function jwtPlugin(fastify: FastifyInstance) {
   const secret = await bcrypt.hash(myPlaintextPassword, saltRounds);
 
   fastify.register(fjwt, {
-    secret
+    secret: secret
   });
 
   fastify.addHook('preHandler', (req, res, next) => {

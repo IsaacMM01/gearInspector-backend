@@ -9,7 +9,7 @@ export default async function cookiePlugin(fastify: FastifyInstance) {
   const secret = await bcrypt.hash(myPlaintextPassword, saltRounds);
 
   fastify.register(fCookie, {
-    secret,
+    secret: secret,
     hook: 'preHandler',
   });
 }
