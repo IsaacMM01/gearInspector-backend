@@ -39,19 +39,30 @@ Esta es una aplicación backend construida con Fastify y Prisma, conectada a una
 5. Inicia el servidor Fastify:
 
     ```bash
-    npx ts-node src/index.ts
+    npm run start
     ```
 
 ## Estructura del Proyecto
     fastify-prisma-app/
     │
-    ├── src/
-    │ ├── routes/
-    │ │ ├── users.ts
-    │ │ └── posts.ts
-    │ ├── index.ts
-    │ └── plugins/
-    │ └── prisma.ts
+    │───src/
+    │   ├── plugins/
+    │   │   ├── cors.ts
+    │   │   ├── jwt.ts
+    │   │   ├── cookie.ts
+    │   │   ├── csrf.ts
+    │   │   └── prisma.ts
+    │   ├── routes/
+    │   │   ├── users/
+    │   │   │   ├── user.controller.ts
+    │   │   │   ├── user.route.ts
+    │   │   │   └── user.schema.ts
+    │   │   └── index.ts
+    │   ├── services/
+    │   │   └── auth.service.ts
+    │   ├── types/
+    │   │   └── types.d.ts
+    │   └── index.ts
     │
     ├── node_modules/
     │
@@ -61,9 +72,3 @@ Esta es una aplicación backend construida con Fastify y Prisma, conectada a una
     │ └── schema.prisma
     │
     └── .env
-## Uso
-
-### Endpoints
-
-- `GET /users`: Obtiene todos los usuarios.
-- `POST /users`: Crea un nuevo usuario.

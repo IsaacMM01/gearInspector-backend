@@ -1,6 +1,5 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify'
-import { prisma } from '../../plugins/prisma';
-import { $ref } from './user.schema';
+import { $ref } from '../../schemas/schemas';
 import { createUser, login, logout } from './user.controller';
 
 export default async function userRoutes(

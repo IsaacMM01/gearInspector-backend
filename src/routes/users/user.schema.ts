@@ -23,15 +23,23 @@ const loginResponseSchema = z.object({
   accessToken: z.string(),
 });
 
-export const { schemas, $ref } = buildJsonSchemas({
-  createUserSchema,
+export const userSchemas =  {
+  createUserSchema, 
   createUserResponseSchema,
   loginSchema,
-  loginResponseSchema,
-});
-
-export default async function userSchemas(fastify: FastifyInstance) {
-  for (let schema of [...schemas]) {
-    fastify.addSchema(schema)
-  }
+  loginResponseSchema
 }
+
+// export const { schemas: userSchemas, $ref: userRef } = buildJsonSchemas({
+//   createUserSchema,
+//   createUserResponseSchema,
+//   loginSchema,
+//   loginResponseSchema,
+// });
+
+// export default async function registerUserSchemas(fastify: FastifyInstance) {
+  
+//   for (let schema of userSchemas) {
+//     fastify.addSchema(schema)
+//   }
+// }
